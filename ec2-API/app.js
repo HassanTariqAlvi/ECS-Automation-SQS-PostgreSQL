@@ -95,7 +95,7 @@ app.get('/queue-count', async (req, res) => {
   }
 });
 
-// Endpoint to retrieve the number of tasks running in the ECS cluster
+// // Endpoint to retrieve the number of tasks running in the ECS cluster
 app.get('/ecs-tasks-count', async (req, res) => {
   const clusterName = 'Ecs-Scrape'; // Replace with your actual ECS cluster name
 
@@ -115,44 +115,11 @@ app.get('/ecs-tasks-count', async (req, res) => {
 });
 
 
-// Function to monitor the SQS queue and launch ECS tasks
-async function monitorQueueAndLaunchECSTasks() {
-  try {
-    const sqsAttributes = await sqs.getQueueAttributes({
-      QueueUrl: queueUrl,
-      AttributeNames: ['ApproximateNumberOfMessages']
-    }).promise();
-    const messageCount = parseInt(sqsAttributes.Attributes.ApproximateNumberOfMessages, 10);
 
-    const ecsTasks = await ecs.listTasks({ cluster: clusterName }).promise();
-    const runningTasksCount = ecsTasks.taskArns.length;
-    const tasksToLaunch = messageCount - runningTasksCount;
-
-    for (let i = 0; i < tasksToLaunch; i++) {
-      await ecs.runTask({
-        cluster: clusterName,
-        launchType: 'FARGATE',
-        taskDefinition: taskDefinition,
-        count: 1,
-        networkConfiguration: {
-          awsvpcConfiguration: {
-            subnets: ['subnet-0be8ec55c55a57265', 'subnet-042d6a3c5c47f7547'], // Replace with your subnet IDs
-            assignPublicIp: 'ENABLED'
-          }
-        }
-      }).promise();
-    }
-    console.log(`Launched ${tasksToLaunch} tasks.`);
-  } catch (err) {
-    console.error('Error monitoring queue and launching ECS tasks:', err);
-  } finally {
-    setTimeout(monitorQueueAndLaunchECSTasks, 1000); // Set the function to run again after 60 seconds
-  }
-}
 
 // Start the server
 const port = 3000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-  monitorQueueAndLaunchECSTasks(); // Start the monitoring function
+  //monitorQueueAndLaunchECSTasks(); // Start the monitoring function
 });
