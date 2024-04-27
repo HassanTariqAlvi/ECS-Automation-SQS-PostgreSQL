@@ -39,9 +39,7 @@ async function pollMessages() {
       const message = data.Messages[0];
       console.log("Successfully picked up URL:", message.Body);
 
-      // Additional processing logic here...
-
-      await launchNewTask();  // Consider moving this inside conditional checks based on message/task count logic.
+      await launchNewTask();
       console.log("Additional tasks launched if necessary.");
 
       await sqs.deleteMessage({
@@ -52,8 +50,13 @@ async function pollMessages() {
 
       await client.query('INSERT INTO ecstask(message, url) VALUES($1, $2)', [message.Body, 'Success']);
       console.log("Successfully inserted the success message into the database");
-      await new Promise(resolve => setTimeout(resolve, 25000));
-      console.log("Continuing after 25-second pause");
+
+      // After processing check the number of running tasks
+      const ecsTasks = await ecs.listTasks({ cluster: clusterName }).promise();
+      if (ecsTasks.taskArns.length > 1) {
+        console.log("More than one task running, exiting current task.");
+        process.exit(0); // Exit gracefully
+      }
 
     } else {
       console.log("No messages to process");
@@ -61,7 +64,7 @@ async function pollMessages() {
   } catch (err) {
     console.error("Error during message processing:", err);
   } finally {
-    setTimeout(pollMessages, 30000);
+    setTimeout(pollMessages, 30000); // Reschedule the polling in case of continuation
   }
 }
 
