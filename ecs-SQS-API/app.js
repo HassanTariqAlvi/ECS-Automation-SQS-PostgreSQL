@@ -7,7 +7,7 @@ require('dotenv').config();
 // PostgreSQL client configuration
 const client = new Client({
   user: 'adminn',
-  host: 'ecs-task-db.cdmumsw8mb3d.eu-north-1.rds.amazonaws.com',
+  host: 'ecs-task-db.c9skawog8vc9.us-west-2.rds.amazonaws.com',
   database: 'ecs-task-db',
   password: process.env.DB_PASSWORD, // Replace with your actual password
   port: 5432,
@@ -23,12 +23,12 @@ client.connect();
 
 // Configure the AWS region
 AWS.config.update({
-  region: 'eu-north-1'
+  region: 'us-west-2'
 });
 
 // Create an SQS service object
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
-const queueUrl = "https://sqs.eu-north-1.amazonaws.com/533267065353/ecs-task.fifo"; // Replace with your queue URL
+const queueUrl = "https://sqs.us-west-2.amazonaws.com/533267065353/ecs-task.fifo"; // Replace with your queue URL
 
 const app = express();
 const port = 4000; // The port the server will listen on
