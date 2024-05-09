@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const bodyParser = require('body-parser');
 const { Client } = require('pg');
 require('dotenv').config();
-const clusterName = 'Ecs-Scrape'; // Your ECS cluster name
+const clusterName = 'Ecs-Scraping'; // Your ECS cluster name
 const taskDefinition = 'ecs-scrapping-td'; // Your ECS task definition
 
 
@@ -15,14 +15,14 @@ app.use(bodyParser.json());
 
 // Configure the AWS region and credentials
 AWS.config.update({
-  region: 'eu-north-1'
+  region: 'us-west-2'
   // credentials will be picked up from the environment or AWS configuration
 });
 
 // PostgreSQL client configuration
 const dbClient = new Client({
   user: 'adminn',
-  host: 'ecs-task-db.cdmumsw8mb3d.eu-north-1.rds.amazonaws.com',
+  host: 'ecs-task-db.c9skawog8vc9.us-west-2.rds.amazonaws.com',
   database: 'ecs-task-db',
   password: process.env.DB_PASSWORD, // Use environment variable to store password
   port: 5432,
@@ -36,7 +36,7 @@ dbClient.connect();
 
 // Create an SQS service object
 const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
-const queueUrl = "https://sqs.eu-north-1.amazonaws.com/533267065353/ecs-task.fifo";
+const queueUrl = "https://sqs.us-west-2.amazonaws.com/533267065353/ecs-task.fifo";
 
 // POST endpoint to send a message to the SQS queue
 app.post('/send', (req, res) => {
@@ -136,7 +136,7 @@ async function monitorQueueAndLaunchECSTasks() {
         count: 1,
         networkConfiguration: {
           awsvpcConfiguration: {
-            subnets: ['subnet-0be8ec55c55a57265', 'subnet-042d6a3c5c47f7547'], // Replace with your subnet IDs
+            subnets: ['subnet-02f310b472d4fe4b4', 'subnet-04c10acc002a5e977'], // Replace with your subnet IDs
             assignPublicIp: 'ENABLED'
           }
         }
